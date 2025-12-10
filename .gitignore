@@ -1,0 +1,50 @@
+# --------------------
+# Python / Django
+# --------------------
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.pot
+
+# --------------------
+# Virtual Environments
+# --------------------
+venv/
+env/
+.venv/
+
+# --------------------
+# Environment Variables
+# --------------------
+.env
+.env.local
+.env.* 
+
+# --------------------
+# Django Specific
+# --------------------
+staticfiles/
+media/
+local_settings.py
+db.sqlite3
+
+# --------------------
+# Migrations Cache
+# --------------------
+**/migrations/__pycache__/
+
+# --------------------
+# Node / React (future frontend)
+# --------------------
+node_modules/
+dist/
+build/
+
+# --------------------
+# OS & Editor Junk
+# --------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
