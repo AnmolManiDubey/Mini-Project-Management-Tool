@@ -1,4 +1,4 @@
-```md
+
 # Project Management System
 
 A full-stack **Project & Task Management System** built with **Django + GraphQL + PostgreSQL** on the backend and **React + TypeScript + Apollo Client** on the frontend.
@@ -116,6 +116,3 @@ X-ORG-SLUG: Kav
 
 **Anmol Mani Dubey**
 Final Year Engineering Student | AI & Data Science | Full-Stack Developer
-
-````
----
