@@ -1,0 +1,13 @@
+# root .dockerignore
+node_modules
+frontend/node_modules
+backend/__pycache__
+*.pyc
+*.pyo
+*.pyd
+venv
+.env
+dist
+build
+.git
+.gitignore
