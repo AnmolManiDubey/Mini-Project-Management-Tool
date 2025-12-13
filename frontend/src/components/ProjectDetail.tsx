@@ -3,7 +3,7 @@ import { gql, useQuery, useMutation } from "@apollo/client";
 import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import type { Project } from "../types/project";
-import type { Task, TaskStatus, TaskComment } from "../types/task";
+import type { Task, TaskStatus } from "../types/task";
 
 /* =======================
    GraphQL
@@ -53,8 +53,6 @@ const CREATE_TASK = gql`
     ) {
       task {
         id
-        title
-        status
       }
     }
   }
@@ -65,40 +63,46 @@ const UPDATE_TASK_STATUS = gql`
     updateTaskStatus(taskId: $taskId, status: $status) {
       task {
         id
-        status
       }
     }
   }
 `;
 
-const ADD_TASK_COMMENT = gql`
-  mutation AddTaskComment(
-    $taskId: ID!
-    $content: String!
-    $authorEmail: String!
-  ) {
-    addTaskComment(
-      taskId: $taskId
-      content: $content
-      authorEmail: $authorEmail
-    ) {
-      comment {
-        id
-      }
+const DELETE_TASK = gql`
+  mutation DeleteTask($taskId: ID!) {
+    deleteTask(taskId: $taskId) {
+      ok
+    }
+  }
+`;
+
+const DELETE_PROJECT = gql`
+  mutation DeleteProject($projectId: ID!) {
+    deleteProject(projectId: $projectId) {
+      ok
     }
   }
 `;
 
 /* =======================
-   Types
+   Helpers
 ======================= */
 
-interface ProjectDetailData {
-  project: Project & { tasks: Task[] };
-}
+function getDueStatus(dueDate?: string | null, status?: string) {
+  if (!dueDate || status === "DONE") return "normal";
 
-interface ProjectDetailVars {
-  id: string;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  const diffDays =
+    (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+
+  if (diffDays < 0) return "overdue";
+  if (diffDays <= 2) return "soon";
+  return "normal";
 }
 
 /* =======================
@@ -108,38 +112,29 @@ interface ProjectDetailVars {
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
 
-  /* Defensive routing guard */
   if (!id) {
     return <div className="p-6 text-red-600">Invalid project ID.</div>;
   }
 
-  const { data, loading, error, refetch } = useQuery<
-    ProjectDetailData,
-    ProjectDetailVars
-  >(GET_PROJECT_DETAIL, {
+  const { data, loading, error, refetch } = useQuery(GET_PROJECT_DETAIL, {
     variables: { id },
   });
 
   const [createTask] = useMutation(CREATE_TASK);
   const [updateTaskStatus] = useMutation(UPDATE_TASK_STATUS);
-  const [addTaskComment] = useMutation(ADD_TASK_COMMENT);
+  const [deleteTask] = useMutation(DELETE_TASK);
+  const [deleteProject] = useMutation(DELETE_PROJECT);
 
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskAssignee, setNewTaskAssignee] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
-  const [commentText, setCommentText] = useState<Record<string, string>>({});
+  const [newTaskDueDate, setNewTaskDueDate] = useState<string | null>(null);
 
   if (loading) return <div className="p-6">Loading project…</div>;
-  if (error)
-    return (
-      <div className="p-6 text-red-600">
-        Error loading project: {error.message}
-      </div>
-    );
-  if (!data?.project)
-    return <div className="p-6">Project not found.</div>;
+  if (error) return <div className="p-6 text-red-600">{error.message}</div>;
+  if (!data?.project) return <div className="p-6">Project not found.</div>;
 
-  const project = data.project;
+  const project: Project & { tasks: Task[] } = data.project;
 
   /* =======================
      Handlers
@@ -156,34 +151,14 @@ export default function ProjectDetail() {
         description: newTaskDescription || null,
         assigneeEmail: newTaskAssignee,
         status: "TODO",
-        dueDate: null,
+        dueDate: newTaskDueDate || null,
       },
     });
 
     setNewTaskTitle("");
     setNewTaskAssignee("");
     setNewTaskDescription("");
-    refetch();
-  };
-
-  const handleStatusChange = async (taskId: string, status: TaskStatus) => {
-    await updateTaskStatus({ variables: { taskId, status } });
-    refetch();
-  };
-
-  const handleAddComment = async (task: Task) => {
-    const content = commentText[task.id];
-    if (!content) return;
-
-    await addTaskComment({
-      variables: {
-        taskId: task.id,
-        content,
-        authorEmail: task.assigneeEmail,
-      },
-    });
-
-    setCommentText((prev) => ({ ...prev, [task.id]: "" }));
+    setNewTaskDueDate(null);
     refetch();
   };
 
@@ -197,111 +172,178 @@ export default function ProjectDetail() {
         ← Back to projects
       </Link>
 
-      <h1 className="text-2xl font-semibold mt-3">{project.name}</h1>
-      {project.description && (
-        <p className="text-slate-600 mt-1">{project.description}</p>
-      )}
+      <div className="flex justify-between items-start mt-3">
+        <div>
+          <h1 className="text-2xl font-semibold">{project.name}</h1>
+          {project.description && (
+            <p className="text-slate-600 mt-1">{project.description}</p>
+          )}
+        </div>
 
-      {/* Create Task */}
+        <button
+          onClick={async () => {
+            if (!window.confirm("Delete this project?")) return;
+            await deleteProject({ variables: { projectId: project.id } });
+            window.location.href = "/projects";
+          }}
+          className="flex items-center gap-2 text-sm text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-md"
+        >
+          🗑️ Delete project
+        </button>
+      </div>
+
+      {/* =======================
+          Create Task Form
+      ======================= */}
       <section className="mt-6 p-4 border rounded-lg bg-white">
         <h2 className="font-semibold mb-3">Add New Task</h2>
-        <form onSubmit={handleCreateTask} className="grid gap-2">
-          <input
-            className="border rounded px-2 py-1"
-            placeholder="Task title"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-          />
-          <input
-            className="border rounded px-2 py-1"
-            placeholder="Assignee email"
-            value={newTaskAssignee}
-            onChange={(e) => setNewTaskAssignee(e.target.value)}
-          />
-          <textarea
-            className="border rounded px-2 py-1"
-            placeholder="Description"
-            value={newTaskDescription}
-            onChange={(e) => setNewTaskDescription(e.target.value)}
-          />
+
+        <form onSubmit={handleCreateTask} className="grid gap-3">
+          <div>
+            <label
+              htmlFor="task-title"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Task title
+            </label>
+            <input
+              id="task-title"
+              type="text"
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              className="w-full border rounded px-2 py-1"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="task-assignee"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Assignee email
+            </label>
+            <input
+              id="task-assignee"
+              type="email"
+              value={newTaskAssignee}
+              onChange={(e) => setNewTaskAssignee(e.target.value)}
+              className="w-full border rounded px-2 py-1"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="task-due-date"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Due date (optional)
+            </label>
+            <input
+              id="task-due-date"
+              type="date"
+              value={newTaskDueDate ?? ""}
+              onChange={(e) => setNewTaskDueDate(e.target.value || null)}
+              className="w-full border rounded px-2 py-1"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="task-description"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Description (optional)
+            </label>
+            <textarea
+              id="task-description"
+              value={newTaskDescription}
+              onChange={(e) => setNewTaskDescription(e.target.value)}
+              className="w-full border rounded px-2 py-1"
+            />
+          </div>
+
           <button className="self-start bg-indigo-600 text-white px-4 py-1 rounded">
             Create Task
           </button>
         </form>
       </section>
 
-      {/* Tasks */}
+      {/* =======================
+          Tasks List
+      ======================= */}
       <section className="mt-6">
         <h2 className="font-semibold mb-3">Tasks</h2>
+
         {project.tasks.length === 0 ? (
           <p className="text-slate-500">No tasks yet.</p>
         ) : (
           <div className="grid gap-4">
-            {project.tasks.map((task) => (
-              <div
-                key={task.id}
-                className="p-4 border rounded-lg bg-white"
-              >
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-medium">{task.title}</h3>
-                    <p className="text-sm text-slate-500">
-                      {task.assigneeEmail}
-                    </p>
+            {project.tasks.map((task) => {
+              const dueStatus = getDueStatus(task.dueDate, task.status);
+              const dueBadge =
+                dueStatus === "overdue"
+                  ? "bg-red-100 text-red-700"
+                  : dueStatus === "soon"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-slate-100 text-slate-600";
+
+              return (
+                <div
+                  key={task.id}
+                  className="p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition"
+                >
+                  <div className="flex justify-between items-start gap-4">
+                    <div>
+                      <h3 className="font-semibold">{task.title}</h3>
+                      <p className="text-sm text-slate-500">
+                        {task.assigneeEmail}
+                      </p>
+                      {task.dueDate && (
+                        <span
+                          className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs ${dueBadge}`}
+                        >
+                          Due:{" "}
+                          {new Date(task.dueDate).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+
+                    <select
+                      value={task.status}
+                      onChange={(e) =>
+                        updateTaskStatus({
+                          variables: {
+                            taskId: task.id,
+                            status: e.target.value as TaskStatus,
+                          },
+                        }).then(refetch)
+                      }
+                      className="border rounded-md px-2 py-1 text-sm bg-white"
+                    >
+                      <option value="TODO">TODO</option>
+                      <option value="IN_PROGRESS">IN PROGRESS</option>
+                      <option value="DONE">DONE</option>
+                    </select>
                   </div>
-                  <select
-                    value={task.status}
-                    onChange={(e) =>
-                      handleStatusChange(
-                        task.id,
-                        e.target.value as TaskStatus
-                      )
-                    }
-                    className="border rounded px-2 py-1 text-sm"
-                  >
-                    <option value="TODO">TODO</option>
-                    <option value="IN_PROGRESS">IN PROGRESS</option>
-                    <option value="DONE">DONE</option>
-                  </select>
-                </div>
 
-                {/* Comments */}
-                <div className="mt-3">
-                  <h4 className="text-sm font-medium">Comments</h4>
-                  {task.comments.length === 0 ? (
-                    <p className="text-xs text-slate-400">
-                      No comments yet.
-                    </p>
-                  ) : (
-                    <ul className="mt-1 space-y-1">
-                      {task.comments.map((c: TaskComment) => (
-                        <li key={c.id} className="text-sm">
-                          <strong>{c.authorEmail}:</strong> {c.content}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  <textarea
-                    className="mt-2 w-full border rounded px-2 py-1 text-sm"
-                    placeholder="Add a comment…"
-                    value={commentText[task.id] || ""}
-                    onChange={(e) =>
-                      setCommentText((p) => ({
-                        ...p,
-                        [task.id]: e.target.value,
-                      }))
-                    }
-                  />
-                  <button
-                    onClick={() => handleAddComment(task)}
-                    className="mt-1 bg-emerald-600 text-white px-3 py-1 rounded text-sm"
-                  >
-                    Add Comment
-                  </button>
+                  <div className="mt-4 pt-3 border-t flex justify-end">
+                    <button
+                      onClick={() => {
+                        if (!window.confirm("Delete this task?")) return;
+                        deleteTask({ variables: { taskId: task.id } }).then(
+                          refetch
+                        );
+                      }}
+                      className="flex items-center gap-2 text-sm text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-md"
+                    >
+                      🗑️ Delete task
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

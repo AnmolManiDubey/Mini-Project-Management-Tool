@@ -5,6 +5,10 @@ import ProjectCard from "./ProjectCard";
 import Layout from "./Layout";
 import { Link } from "react-router-dom";
 
+/* =======================
+   GraphQL
+======================= */
+
 const GET_PROJECTS = gql`
   query GetProjects {
     projects {
@@ -12,6 +16,7 @@ const GET_PROJECTS = gql`
       name
       description
       status
+      dueDate       # ✅ ADD THIS
       tasks {
         id
         title
@@ -20,6 +25,10 @@ const GET_PROJECTS = gql`
     }
   }
 `;
+
+/* =======================
+   Types
+======================= */
 
 type Task = {
   id: string;
@@ -32,12 +41,17 @@ type Project = {
   name: string;
   description?: string | null;
   status: string;
+  dueDate?: string | null;   // ✅ ADD THIS
   tasks: Task[];
 };
 
 type ProjectsData = {
   projects: Project[];
 };
+
+/* =======================
+   Component
+======================= */
 
 export default function ProjectList() {
   const { data, loading, error } = useQuery<ProjectsData>(GET_PROJECTS);
@@ -47,7 +61,9 @@ export default function ProjectList() {
   return (
     <Layout title="Projects">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Projects</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">
+          Projects
+        </h1>
 
         <Link
           to="/projects/create"
@@ -71,8 +87,8 @@ export default function ProjectList() {
         </div>
       ) : (
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} />
+          {projects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
           ))}
         </section>
       )}

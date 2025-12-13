@@ -301,9 +301,54 @@ class AddTaskComment(graphene.Mutation):
         )
         return AddTaskComment(comment=comment)
 
+class DeleteTask(graphene.Mutation):
+    class Arguments:
+        task_id = graphene.ID(required=True)
+
+    ok = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, task_id):
+        request = info.context
+        org = get_request_org(request)
+
+        try:
+            task = Task.objects.select_related("project", "project__organization").get(
+                pk=task_id,
+                project__organization=org,
+            )
+        except Task.DoesNotExist:
+            raise Exception("Task not found in this organization.")
+
+        task.delete()
+        return DeleteTask(ok=True)
+
+class DeleteProject(graphene.Mutation):
+    class Arguments:
+        project_id = graphene.ID(required=True)
+
+    ok = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, project_id):
+        request = info.context
+        org = get_request_org(request)
+
+        try:
+            project = Project.objects.select_related("organization").get(
+                pk=project_id,
+                organization=org,
+            )
+        except Project.DoesNotExist:
+            raise Exception("Project not found in this organization.")
+
+        project.delete()
+        return DeleteProject(ok=True)
 
 class Mutation(graphene.ObjectType):
     create_project = CreateProject.Field()
     create_task = CreateTask.Field()
     update_task_status = UpdateTaskStatus.Field()
     add_task_comment = AddTaskComment.Field()
+    delete_task = DeleteTask.Field()
+    delete_project = DeleteProject.Field()
