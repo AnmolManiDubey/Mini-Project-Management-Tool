@@ -1,9 +1,10 @@
 // frontend/src/components/ProjectList.tsx
-import * as React from "react";
-import { useQuery, gql } from "@apollo/client"; 
+import React from "react";
+import { useQuery, gql } from "@apollo/client";
 import ProjectCard from "./ProjectCard";
-import { Link } from "react-router-dom";
 import Layout from "./Layout";
+import { Link } from "react-router-dom";
+
 const GET_PROJECTS = gql`
   query GetProjects {
     projects {
@@ -11,37 +12,37 @@ const GET_PROJECTS = gql`
       name
       description
       status
-      taskCount
-      completedTasks
-      slug
+      tasks {
+        id
+        title
+        status
+      }
     }
   }
 `;
+
+type Task = {
+  id: string;
+  title: string;
+  status: string;
+};
 
 type Project = {
   id: string;
   name: string;
   description?: string | null;
-  status?: string | null;
-  taskCount?: number | null;
-  completedTasks?: number | null;
-  slug?: string | null;
+  status: string;
+  tasks: Task[];
 };
 
 type ProjectsData = {
-  // Explicitly allow null/undefined items, which you are correctly filtering later
-  projects?: (Project | null | undefined)[] | null;
+  projects: Project[];
 };
 
-// Removed useEffect and useState imports as they are unused in ProjectList.tsx
 export default function ProjectList() {
-  const { data, loading, error } = useQuery<ProjectsData>(GET_PROJECTS, {
-    fetchPolicy: "cache-and-network",
-  });
+  const { data, loading, error } = useQuery<ProjectsData>(GET_PROJECTS);
 
-  // Data Filtering (Safeguard against runtime error: Cannot read properties of undefined)
-  const projects: Project[] =
-    data?.projects?.filter((p): p is Project => p !== null && p !== undefined) ?? [];
+  const projects = data?.projects ?? [];
 
   return (
     <Layout title="Projects">
@@ -50,23 +51,19 @@ export default function ProjectList() {
 
         <Link
           to="/projects/create"
-          className="inline-flex items-center px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg shadow-sm"
+          className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-sm"
         >
           + New Project
         </Link>
       </div>
 
-      {loading && !data ? (
+      {loading ? (
         <div className="py-12 text-center text-slate-500">Loading projects…</div>
       ) : error ? (
-        <div className="py-12 text-center text-red-600">Error loading projects: {error.message}</div>
+        <div className="py-12 text-center text-red-600">{error.message}</div>
       ) : projects.length === 0 ? (
         <div className="py-12 text-center text-slate-500">
-          No projects found. Click{" "}
-          <Link to="/projects/create" className="text-sky-600 underline">
-            New Project
-          </Link>{" "}
-          to create one.
+          No projects found.
         </div>
       ) : (
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
