@@ -1,5 +1,4 @@
 // frontend/src/components/ProjectList.tsx
-import React from "react";
 import { useQuery, gql } from "@apollo/client";
 import ProjectCard from "./ProjectCard";
 import Layout from "./Layout";
