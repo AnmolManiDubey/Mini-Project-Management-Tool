@@ -14,11 +14,11 @@ export default function Layout({
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-sky-600 rounded-lg flex items-center justify-center text-white font-bold">
-              MP
+              PM
             </div>
             <div>
               <div className="text-sm font-medium text-slate-700">
-                Mini Project Manager
+                Project Manager
               </div>
               <div className="text-xs text-slate-500">
                 Organize tasks & collaborate
