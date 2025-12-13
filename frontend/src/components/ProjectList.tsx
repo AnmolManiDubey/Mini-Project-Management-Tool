@@ -58,9 +58,13 @@ export default function ProjectList() {
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-slate-500">Loading projects…</div>
+        <div className="py-12 text-center text-slate-500">
+          Loading projects…
+        </div>
       ) : error ? (
-        <div className="py-12 text-center text-red-600">{error.message}</div>
+        <div className="py-12 text-center text-red-600">
+          {error.message}
+        </div>
       ) : projects.length === 0 ? (
         <div className="py-12 text-center text-slate-500">
           No projects found.

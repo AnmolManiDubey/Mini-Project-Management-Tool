@@ -20,7 +20,9 @@ type Props = { project: Project };
 
 export default function ProjectCard({ project }: Props) {
     const taskCount = project.tasks.length;
-    const completedTasks = project.tasks.filter((t) => t.status === "DONE").length;
+    const completedTasks = project.tasks.filter(
+        (t) => t.status === "DONE"
+    ).length;
 
     const completion =
         taskCount === 0 ? 0 : Math.round((completedTasks / taskCount) * 100);
@@ -42,13 +44,11 @@ export default function ProjectCard({ project }: Props) {
                 : "bg-gradient-to-r from-sky-400 to-sky-600";
 
     return (
-        <article className="relative bg-white rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-200">
-            <Link
-                to={`/projects/${project.id}`}
-                className="absolute inset-0 rounded-2xl z-0 focus:outline-none focus:ring-2 focus:ring-sky-400"
-            />
-
-            <div className="relative z-10 p-5 flex flex-col gap-4 h-full">
+        <Link
+            to={`/projects/${project.id}`}
+            className="block focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-2xl"
+        >
+            <article className="bg-white rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-200 p-5 flex flex-col gap-4 h-full">
                 {/* HEADER */}
                 <div className="flex items-start justify-between gap-3">
                     <h2 className="text-lg font-semibold text-slate-900">
@@ -81,7 +81,7 @@ export default function ProjectCard({ project }: Props) {
                                 <div
                                     className={`h-2.5 rounded-full transition-all duration-700 ${progressColor}`}
                                     style={{ width: `${pct}%` }}
-                                ></div>
+                                />
                             </div>
                         </div>
 
@@ -92,15 +92,15 @@ export default function ProjectCard({ project }: Props) {
 
                     {/* STATS */}
                     <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <span className="font-semibold text-slate-700">{taskCount}</span>{" "}
-                        Tasks
+                        <span className="font-semibold text-slate-700">{taskCount}</span>
+                        <span>Tasks</span>
                         <span className="font-semibold text-slate-700">
                             {completedTasks}
-                        </span>{" "}
-                        Done
+                        </span>
+                        <span>Done</span>
                     </div>
                 </div>
-            </div>
-        </article>
+            </article>
+        </Link>
     );
 }
