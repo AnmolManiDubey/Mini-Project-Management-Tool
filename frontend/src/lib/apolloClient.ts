@@ -1,16 +1,13 @@
-import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client/core";
-
-const GRAPHQL_URL =
-  import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8000/graphql/";
+import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client";
 
 const httpLink = new HttpLink({
-  uri: GRAPHQL_URL,
+  uri: import.meta.env.VITE_GRAPHQL_URL,
   headers: {
-    "X-ORG-SLUG": "Kav",
-  },
+    "X-ORG-SLUG": "Kav"
+  }
 });
 
 export const apolloClient = new ApolloClient({
   link: httpLink,
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache()
 });
