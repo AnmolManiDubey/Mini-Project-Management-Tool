@@ -5,6 +5,10 @@ A full-stack **Project & Task Management System** built with **Django + GraphQL 
 The application supports **organization-based multi-tenancy**, project tracking, task workflows, and collaborative task comments.
 
 ---
+## 🎥 Demo
+▶️ [Watch on Loom](https://www.loom.com/share/0d538b13f3444be69da77557170a3818)
+
+---
 
 ## 🌐 Live Deployment
 
@@ -169,4 +173,4 @@ This ensures strict tenant-level data isolation.
 Final Year Engineering Student
 AI & Data Science | Full-Stack Developer
 
-* LinkedIn: <https://www.linkedin.com/in/anmol-mani-dubey-29b984153/>
+* [LinkedIn](https://www.linkedin.com/in/anmol-mani-dubey-29b984153/)
