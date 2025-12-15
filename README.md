@@ -1,4 +1,3 @@
-```md
 # Project Management System
 
 A full-stack **Project & Task Management System** built with **Django + GraphQL + PostgreSQL** on the backend and **React + TypeScript + Apollo Client** on the frontend.
@@ -15,9 +14,7 @@ The application supports **organization-based multi-tenancy**, project tracking,
 
 ---
 
-## 📸 Screenshots
-
-> _Screenshots will be added soon_
+## 📸 Sneak-Peek
 
 | Page | Preview |
 |-----|--------|
