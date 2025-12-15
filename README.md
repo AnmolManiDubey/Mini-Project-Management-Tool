@@ -160,7 +160,7 @@ This ensures strict tenant-level data isolation.
 * Real-time updates with subscriptions
 * File attachments for tasks
 
----
+
 
 ## 👨‍💻 Author
 
@@ -170,5 +170,3 @@ Final Year Engineering Student
 AI & Data Science | Full-Stack Developer
 
 * LinkedIn: <https://www.linkedin.com/in/anmol-mani-dubey-29b984153/>
-
----
