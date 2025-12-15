@@ -165,10 +165,10 @@ This ensures strict tenant-level data isolation.
 ## 👨‍💻 Author
 
 **Anmol Mani Dubey**
+
 Final Year Engineering Student
 AI & Data Science | Full-Stack Developer
 
-* GitHub: [https://github.com/AnmolManiDubey](https://github.com/AnmolManiDubey)
-* LinkedIn: <YOUR_LINKEDIN>
+* LinkedIn: <https://www.linkedin.com/in/anmol-mani-dubey-29b984153/>
 
 ---
