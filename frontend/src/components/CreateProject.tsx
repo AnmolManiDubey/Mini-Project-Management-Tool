@@ -43,6 +43,7 @@ export default function CreateProject() {
     const [dueDate, setDueDate] = useState<string | null>(null);
 
     const [createProject, { loading, error }] = useMutation(CREATE_PROJECT, {
+        refetchQueries: ["GetProjects"], // ✅ FIX: refresh projects list
         onCompleted: () => navigate("/projects"),
     });
 
@@ -90,7 +91,7 @@ export default function CreateProject() {
                         onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. Website Redesign"
                         className="w-full border rounded-lg px-3 py-2 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-sky-400"
+            focus:outline-none focus:ring-2 focus:ring-sky-400"
                         required
                     />
                 </div>
@@ -109,7 +110,7 @@ export default function CreateProject() {
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="What is this project about?"
                         className="w-full border rounded-lg px-3 py-2 text-sm
-                       min-h-[90px] focus:outline-none focus:ring-2 focus:ring-sky-400"
+            min-h-[90px] focus:outline-none focus:ring-2 focus:ring-sky-400"
                     />
                 </div>
 
@@ -127,7 +128,7 @@ export default function CreateProject() {
                         value={dueDate ?? ""}
                         onChange={(e) => setDueDate(e.target.value || null)}
                         className="w-full border rounded-lg px-3 py-2 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-sky-400"
+            focus:outline-none focus:ring-2 focus:ring-sky-400"
                     />
                 </div>
 
@@ -144,7 +145,7 @@ export default function CreateProject() {
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
                         className="w-full border rounded-lg px-3 py-2 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-sky-400"
+            focus:outline-none focus:ring-2 focus:ring-sky-400"
                     >
                         <option value="ACTIVE">Active</option>
                         <option value="ON_HOLD">On Hold</option>
@@ -163,8 +164,8 @@ export default function CreateProject() {
                         type="submit"
                         disabled={loading}
                         className="bg-sky-600 hover:bg-sky-700 text-white
-                       px-5 py-2 rounded-lg text-sm font-medium
-                       disabled:opacity-60"
+            px-5 py-2 rounded-lg text-sm font-medium
+            disabled:opacity-60"
                     >
                         {loading ? "Creating..." : "Create Project"}
                     </button>
@@ -172,7 +173,7 @@ export default function CreateProject() {
                     <Link
                         to="/projects"
                         className="px-5 py-2 rounded-lg text-sm border
-                       text-slate-700 hover:bg-slate-50"
+            text-slate-700 hover:bg-slate-50"
                     >
                         Cancel
                     </Link>
