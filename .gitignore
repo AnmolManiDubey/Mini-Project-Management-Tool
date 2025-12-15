@@ -48,3 +48,4 @@ build/
 Thumbs.db
 .vscode/
 .idea/
+frontend/tsconfig.node.tsbuildinfo
